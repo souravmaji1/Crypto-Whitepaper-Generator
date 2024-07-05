@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { chatSession } from '@/utils/GeminiAIModal';
-import { Printer, FileText } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import { chatSession } from '@/utils/GeminiAIModal'; // Adjust the import path as needed
+import { Printer } from 'lucide-react';
 
 export default function WhitepaperGenerator() {
   const [projectName, setProjectName] = useState('');
@@ -30,32 +29,19 @@ export default function WhitepaperGenerator() {
       - Solution: ${solution}
       - Tokenomics: ${tokenomics}
 
-      Please format the whitepaper with the following sections, using Markdown syntax for proper formatting:
-      # ${projectName.toUpperCase()} WHITEPAPER
-      
-      Date: ${new Date().toLocaleDateString()}
+      Please format the whitepaper with the following sections:
+      1. Executive Summary
+      2. Introduction
+      3. Problem Statement
+      4. Solution
+      5. Technology
+      6. Token Utility
+      7. Tokenomics
+      8. Roadmap
+      9. Team
+      10. Conclusion
 
-      ## Executive Summary
-
-      ## Introduction
-
-      ## Problem Statement
-
-      ## Solution
-
-      ## Technology
-
-      ## Token Utility
-
-      ## Tokenomics
-
-      ## Roadmap
-
-      ## Team
-
-      ## Conclusion
-
-      Ensure all section headings are properly formatted as Markdown headings (##). The whitepaper should be comprehensive and ready for presentation to potential investors.`;
+      The whitepaper should be comprehensive and ready for presentation to potential investors.`;
 
       const result = await chatSession.sendMessage(prompt);
       const response = await result.response;
@@ -70,85 +56,126 @@ export default function WhitepaperGenerator() {
   };
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
+    const printContent = `
       <html>
         <head>
           <title>${projectName} Whitepaper</title>
           <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+            
             body {
-              font-family: 'Inter', sans-serif;
+              font-family: 'Roboto', sans-serif;
               line-height: 1.6;
               color: #333;
               max-width: 800px;
               margin: 0 auto;
               padding: 40px;
+              background-color: #f9f9f9;
             }
-            h1 { font-size: 28px; color: #2c3e50; font-weight: 700; }
-            h2 { font-size: 22px; color: #34495e; font-weight: 600; }
-            p { text-align: justify; }
+            
+            .whitepaper {
+              background-color: white;
+              padding: 60px;
+              box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            }
+            
+            .header {
+              text-align: center;
+              margin-bottom: 40px;
+            }
+            
+            h1 {
+              color: #2c3e50;
+              font-size: 28px;
+              text-transform: uppercase;
+              letter-spacing: 2px;
+              margin-bottom: 10px;
+            }
+            
+            .whitepaper-info {
+              font-size: 14px;
+              color: #7f8c8d;
+            }
+            
+            .whitepaper-content {
+              white-space: pre-wrap;
+              text-align: justify;
+            }
+            
+            @media print {
+              body {
+                background-color: white;
+              }
+              .whitepaper {
+                box-shadow: none;
+                padding: 0;
+              }
+            }
           </style>
         </head>
         <body>
-          ${generatedWhitepaper}
+          <div class="whitepaper">
+            <div class="header">
+              <h1>${projectName} Whitepaper</h1>
+              <div class="whitepaper-info">
+                Date: ${new Date().toLocaleDateString()}
+              </div>
+            </div>
+            
+            <div class="whitepaper-content">${generatedWhitepaper}</div>
+          </div>
         </body>
       </html>
-    `);
+    `;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
     printWindow.document.close();
     printWindow.print();
   };
 
   return (
-    <div className="container mx-auto p-8 bg-gradient-to-br from-blue-50 to-teal-50 min-h-screen">
-      <h1 className="text-5xl font-extrabold mb-8 text-center bg-gradient-to-r from-blue-600 to-teal-400 text-transparent bg-clip-text">
-        Cryptocurrency Whitepaper Generator
-      </h1>
-      <div className="bg-white rounded-lg shadow-xl p-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label htmlFor="projectName" className="text-lg font-semibold text-gray-700">Project Name</Label>
-              <Input id="projectName" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="Enter your project name" className="mt-1" />
-            </div>
-            <div>
-              <Label htmlFor="tokenSymbol" className="text-lg font-semibold text-gray-700">Token Symbol</Label>
-              <Input id="tokenSymbol" value={tokenSymbol} onChange={(e) => setTokenSymbol(e.target.value)} placeholder="Enter token symbol" className="mt-1" />
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="blockchain" className="text-lg font-semibold text-gray-700">Blockchain</Label>
-            <Input id="blockchain" value={blockchain} onChange={(e) => setBlockchain(e.target.value)} placeholder="Enter blockchain (e.g., Ethereum, Binance Smart Chain)" className="mt-1" />
-          </div>
-          <div>
-            <Label htmlFor="problemStatement" className="text-lg font-semibold text-gray-700">Problem Statement</Label>
-            <Textarea id="problemStatement" value={problemStatement} onChange={(e) => setProblemStatement(e.target.value)} placeholder="Describe the problem your project aims to solve" className="mt-1" />
-          </div>
-          <div>
-            <Label htmlFor="solution" className="text-lg font-semibold text-gray-700">Solution</Label>
-            <Textarea id="solution" value={solution} onChange={(e) => setSolution(e.target.value)} placeholder="Explain how your project solves the problem" className="mt-1" />
-          </div>
-          <div>
-            <Label htmlFor="tokenomics" className="text-lg font-semibold text-gray-700">Tokenomics</Label>
-            <Textarea id="tokenomics" value={tokenomics} onChange={(e) => setTokenomics(e.target.value)} placeholder="Describe your token distribution and economics" className="mt-1" />
-          </div>
-          <Button type="submit" disabled={isLoading} className="w-full bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white font-bold py-3 rounded-lg transition duration-300">
-            {isLoading ? 'Generating...' : 'Generate Whitepaper'}
-          </Button>
-        </form>
-      </div>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Cryptocurrency Whitepaper Generator</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <Label htmlFor="projectName">Project Name</Label>
+          <Input id="projectName" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="Enter your project name" />
+        </div>
+        <div>
+          <Label htmlFor="tokenSymbol">Token Symbol</Label>
+          <Input id="tokenSymbol" value={tokenSymbol} onChange={(e) => setTokenSymbol(e.target.value)} placeholder="Enter token symbol" />
+        </div>
+        <div>
+          <Label htmlFor="blockchain">Blockchain</Label>
+          <Input id="blockchain" value={blockchain} onChange={(e) => setBlockchain(e.target.value)} placeholder="Enter blockchain (e.g., Ethereum, Binance Smart Chain)" />
+        </div>
+        <div>
+          <Label htmlFor="problemStatement">Problem Statement</Label>
+          <Textarea id="problemStatement" value={problemStatement} onChange={(e) => setProblemStatement(e.target.value)} placeholder="Describe the problem your project aims to solve" />
+        </div>
+        <div>
+          <Label htmlFor="solution">Solution</Label>
+          <Textarea id="solution" value={solution} onChange={(e) => setSolution(e.target.value)} placeholder="Explain how your project solves the problem" />
+        </div>
+        <div>
+          <Label htmlFor="tokenomics">Tokenomics</Label>
+          <Textarea id="tokenomics" value={tokenomics} onChange={(e) => setTokenomics(e.target.value)} placeholder="Describe your token distribution and economics" />
+        </div>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? 'Generating...' : 'Generate Whitepaper'}
+        </Button>
+      </form>
       {generatedWhitepaper && (
-        <div className="mt-12 bg-white rounded-lg shadow-xl p-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Generated Whitepaper</h2>
-            <Button onClick={handlePrint} className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300">
-              <Printer size={20} />
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="text-xl font-semibold">Generated Whitepaper:</h2>
+            <Button onClick={handlePrint} className="flex items-center gap-2">
+              <Printer size={16} />
               Print Whitepaper
             </Button>
           </div>
-          <div className="prose max-w-none">
-            <ReactMarkdown>{generatedWhitepaper}</ReactMarkdown>
-          </div>
+          <div className="border p-4 rounded-md whitespace-pre-wrap font-serif">{generatedWhitepaper}</div>
         </div>
       )}
     </div>
