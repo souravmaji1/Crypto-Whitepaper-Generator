@@ -1,21 +1,17 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import MistralClient from "@mistralai/mistralai";
 
 const CustomerCareChat = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
-  const [modelName, setModelName] = useState('');
+  const [modelAdapterId, setModelAdapterId] = useState('');
   const [error, setError] = useState(null);
-
-  const apiKey = 'x9MsdlAKGQz4ea2Ku83DasGlj0bVWdTZ';
-  const client = new MistralClient(apiKey);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const model = urlParams.get('model');
-    setModelName(model);
+    setModelAdapterId(model);
   }, []);
 
   const toggleChat = () => {
@@ -34,12 +30,25 @@ const CustomerCareChat = () => {
     setError(null);
 
     try {
-      const chatResponse = await client.chat({
-        model: modelName,
-        messages: [...chatHistory, { role: 'user', content: message }],
+      const response = await fetch('http://localhost:4000/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          modelAdapterId,
+          query: message,
+          maxTokens: 100
+        }),
       });
 
-      setChatHistory(prev => [...prev, { role: 'assistant', content: chatResponse.choices[0].message.content }]);
+      if (!response.ok) {
+        throw new Error('Failed to get response from the server');
+      }
+
+      const data = await response.json();
+
+      setChatHistory(prev => [...prev, { role: 'assistant', content: data.response }]);
     } catch (error) {
       console.error('Error in chat:', error);
       setError(error.message || 'An unknown error occurred');
