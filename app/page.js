@@ -118,8 +118,8 @@ const CustomerCareChat = () => {
       </Button>
 
       {isChatOpen && (
-        <Card className="fixed bottom-20 right-4 w-80 h-[28rem] flex flex-col">
-          <CardHeader className="bg-orange-500 text-orange-foreground p-2">
+        <Card className="fixed bottom-20 right-4 w-80 h-[24rem] flex flex-col">
+          <CardHeader className="bg-orange-500 text-orange-foreground p-2" style={{borderRadius:'5px 5px 0 0'}}>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Avatar className="h-8 w-8">
