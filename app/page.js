@@ -19,7 +19,7 @@ const CustomerCareChat = () => {
 
   // Simulated customer data
   const customer = {
-    name: "John Doe",
+    name: "StartConvo",
     avatar: "/api/placeholder/32/32",
     isOnline: true
   };
@@ -37,7 +37,7 @@ const CustomerCareChat = () => {
       setChatHistory([
         { 
           role: 'assistant', 
-          content: `Hello ${customer.name}! Welcome to our customer care chat. How may I assist you today?`
+          content: `Hello ! Welcome to our customer care chat. How may I assist you today?`
         }
       ]);
     }
@@ -56,7 +56,7 @@ const CustomerCareChat = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:4000/chat', {
+      const response = await fetch('https://startconvoai.onrender.com/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
