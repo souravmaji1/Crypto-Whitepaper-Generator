@@ -12,7 +12,7 @@ import axios from "axios"
 import Vapi from "@vapi-ai/web";
 import { createClient } from '@supabase/supabase-js'
 
-const vapi = new Vapi("ae9531e2-ffe6-4d7f-aa52-ec3f9bc043ac");
+const vapi = new Vapi("47bc2bc7-173d-4474-b2c5-ed12188b82b3");
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
