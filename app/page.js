@@ -8,6 +8,17 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
+import axios from "axios"
+import Vapi from "@vapi-ai/web";
+import { createClient } from '@supabase/supabase-js'
+
+const vapi = new Vapi("ae9531e2-ffe6-4d7f-aa52-ec3f9bc043ac");
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
+
 
 const CustomerCareChat = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -17,6 +28,8 @@ const CustomerCareChat = () => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [assistantId, setAssistantId] = useState('');
+  const [isCallInProgress, setIsCallInProgress] = useState(false);
   // Simulated customer data
   const customer = {
     name: "StartConvo",
@@ -28,7 +41,75 @@ const CustomerCareChat = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const model = urlParams.get('model');
     setModelAdapterId(model);
+
+    if (model) {
+      fetchAssistantId(model);
+    }
+
+    vapi.on("call-start", () => {
+      console.log("Call has started.");
+      // Update UI to show call in progress
+    });
+
+    vapi.on("call-end", () => {
+      console.log("Call has ended.");
+      setIsCallInProgress(false);
+    });
+
+
+    vapi.on("error", (e) => {
+      console.error("Vapi error:", e);
+      setError("An error occurred during the call.");
+    });
+
+
+    return () => {
+      vapi.removeAllListeners();
+    };
+
   }, []);
+
+  const fetchAssistantId = async (modelId) => {
+    try {
+      const { data, error } = await supabase
+        .from('mybots') // Replace with your actual table name
+        .select('assistant_id')
+        .eq('finetune_id', modelId)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setAssistantId(data.assistant_id);
+      } else {
+        console.error('No assistant ID found for this model');
+        setError('No assistant found for this model');
+      }
+    } catch (error) {
+      console.error('Error fetching assistant ID:', error);
+      setError('Error fetching assistant information');
+    }
+  };
+
+  const handleCallClick = async () => {
+    try {
+      await vapi.start(assistantId);
+      setIsCallInProgress(true);
+    } catch (error) {
+      console.error("Error starting call:", error);
+      setError("Failed to start the call. Please try again.");
+    }
+  };
+
+  const handleEndCall = async () => {
+    try {
+      await vapi.stop();
+      setIsCallInProgress(false);
+    } catch (error) {
+      console.error("Error ending call:", error);
+      setError("Failed to end the call properly. You may need to refresh the page.");
+    }
+  };
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
@@ -50,31 +131,27 @@ const CustomerCareChat = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
-
+  
     setChatHistory(prev => [...prev, { role: 'user', content: message }]);
     setError(null);
     setIsLoading(true);
-
+  
     try {
-      const response = await fetch('https://startconvoai.onrender.com/chat', {
-        method: 'POST',
+      const response = await axios.post('https://api.cohere.com/v1/chat', {
+        model: modelAdapterId,
+        message: message
+      }, {
         headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          modelAdapterId,
-          query: message,
-          maxTokens: 100
-        }),
+          'Authorization': 'Bearer suaH02pXwO37aD8XQsYca1XlE3chrOvMGcdHJRJV',
+          'Content-Type': 'application/json'
+        }
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to get response from the server');
+  
+      if (response.data && response.data.text) {
+        setChatHistory(prev => [...prev, { role: 'assistant', content: response.data.text }]);
+      } else {
+        throw new Error('Invalid response from Cohere API');
       }
-
-      const data = await response.json();
-
-      setChatHistory(prev => [...prev, { role: 'assistant', content: data.response }]);
     } catch (error) {
       console.error('Error in chat:', error);
       setError(error.message || 'An unknown error occurred');
@@ -82,7 +159,7 @@ const CustomerCareChat = () => {
     } finally {
       setIsLoading(false);
     }
-
+  
     setMessage('');
   };
 
@@ -135,12 +212,20 @@ const CustomerCareChat = () => {
                 </div>
               </div>
               <div className="flex space-x-1">
-                <Button variant="ghost" size="icon" className="text-orange-foreground h-8 w-8">
-                  <Phone className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="text-orange-foreground h-8 w-8">
-                  <Video className="h-4 w-4" />
-                </Button>
+              <Button 
+  variant="ghost" 
+  size="icon" 
+  className="text-orange-foreground h-8 w-8"  
+  onClick={isCallInProgress ? handleEndCall : handleCallClick} 
+  disabled={!assistantId}
+>
+  {isCallInProgress ? (
+    <X className="h-4 w-4 text-red-500" />
+  ) : (
+    <Phone className="h-4 w-4" />
+  )}
+</Button>
+               
                 <Button variant="ghost" size="icon" className="text-orange-foreground h-8 w-8">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
