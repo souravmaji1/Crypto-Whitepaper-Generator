@@ -7,8 +7,8 @@ import Head from "next/head";
 
 
 export const metadata = {
-  title: "CWG",
-  description: "Cryptocurrenyc Whitepaper generator.",
+  title: "Replygen widget",
+  description: "Replygen widget.",
 };
 
 export default function RootLayout({ children }) {
